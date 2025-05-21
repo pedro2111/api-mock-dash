@@ -1,0 +1,22 @@
+{
+  "name": "dashboard-backend",
+  "version": "1.0.0",
+  "description": "Backend para o Dashboard de Monitoramento do Ciclo de Vida de Propostas",
+  "main": "api.js",
+  "bin": "api.js",
+  "scripts": {
+    "start": "node api.js",
+    "dev": "nodemon api.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pkg ."
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "oracledb": "^6.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
