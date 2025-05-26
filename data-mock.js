@@ -12,23 +12,42 @@ function getKpisMock() {
 }
 
 // Função para gerar dados simulados para a distribuição de propostas por situação
-function getDistribuicaoSituacaoMock() {
+function getDistribuicaoSituacaoMock(params = {}) {
+  // Carregar dados do arquivo massa-distribuicao-proposta.json
+  const historico = require('./massa-distribuicao-proposta.json');
+  let situacoes = historico.situacaoRelatorio || [];
+
+  // Aplicar filtros de data
+  if (params.dataInicio) {
+    const [dia, mes, ano] = params.dataInicio.split('/');
+    const dataInicio = new Date(`${ano}-${mes}-${dia}T00:00:00`);
+    situacoes = situacoes.filter(s => new Date(s.dataAtualizacao) >= dataInicio);
+  }
+
+  if (params.dataFim) {
+    const [dia, mes, ano] = params.dataFim.split('/');
+    const dataFim = new Date(`${ano}-${mes}-${dia}T23:59:59`);
+    situacoes = situacoes.filter(s => new Date(s.dataAtualizacao) <= dataFim);
+  }
+
+  // Aplicar paginação
+  const offset = parseInt(params.offset) || 0;
+  const limit = parseInt(params.limit) || 100;
+  const totalRegistros = situacoes.length;
+  situacoes = situacoes.slice(offset, offset + limit);
+
   return {
     timestamp: new Date().toLocaleString('pt-BR'),
     paginacao: {
-      offset: 0,
-      limit: 100,
-      count: 7
+      offset: offset,
+      limit: limit,
+      count: totalRegistros
     },
-    situacaoRelatorio: [
-      { sgSituacaoProposta: 'EMT', deSituacaoProposta: 'DOCUMENTO EMITIDO', quantidade: 146 },
-      { sgSituacaoProposta: 'ENV', deSituacaoProposta: 'PROPOSTA VENDIDA', quantidade: 97 },
-      { sgSituacaoProposta: 'REJ', deSituacaoProposta: 'REJEITADA', quantidade: 54 },
-      { sgSituacaoProposta: 'CAN', deSituacaoProposta: 'CANCELADA', quantidade: 15 },
-      { sgSituacaoProposta: 'MAN', deSituacaoProposta: 'PROP. RECEBIDA DA EMPRESA,AGUARDANDO EMISSAO', quantidade: 6 },
-      { sgSituacaoProposta: 'EXC', deSituacaoProposta: 'REGISTRO EXCLUIDO', quantidade: 3 },
-      { sgSituacaoProposta: 'GER', deSituacaoProposta: 'PROPOSTA GERADA ', quantidade: 1 }
-    ]
+    filtros: {
+      dataInicio: params.dataInicio || null,
+      dataFim: params.dataFim || null
+    },
+    situacaoRelatorio: situacoes
   };
 }
 

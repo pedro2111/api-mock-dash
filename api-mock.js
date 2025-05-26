@@ -13,52 +13,58 @@ app.use(cors());
 app.use(express.json());
 
 // Endpoint: Obter KPIs principais
-app.get('/api/kpis', (req, res) => {
+app.get('/backend/kpis', (req, res) => {
   res.json(mockData.getKpisMock());
 });
 
 // Endpoint: Obter distribuição de propostas por situação
-app.get('/api/distribuicao-situacao', (req, res) => {
-  res.json(mockData.getDistribuicaoSituacaoMock());
+app.get('/backend/monitoracao/v1/relatorios/situacoes', (req, res) => {
+  const params = {
+    dataInicio: req.query.dataInicio,
+    dataFim: req.query.dataFim,
+    offset: req.query.offset,
+    limit: req.query.limit
+  };
+  res.json(mockData.getDistribuicaoSituacaoMock(params));
 });
 
 // Endpoint: Obter propostas em GER por mais de 2 horas
-app.get('/api/propostas-ger-2h', (req, res) => {
+app.get('/backend/propostas-ger-2h', (req, res) => {
   res.json(mockData.getPropostasGer2hMock());
 });
 
 // Endpoint: Obter evolução de propostas ao longo do tempo
-app.get('/api/evolucao-propostas', (req, res) => {
+app.get('/backend/evolucao-propostas', (req, res) => {
   res.json(mockData.getEvolucaoPropostasMock());
 });
 
 // Endpoint: Obter tempo médio em cada situação
-app.get('/api/tempo-medio-situacao', (req, res) => {
+app.get('/backend/tempo-medio-situacao', (req, res) => {
   res.json(mockData.getTempoMedioSituacaoMock());
 });
 
 // Endpoint: Obter conversão entre etapas principais (funil)
-app.get('/api/conversao-etapas', (req, res) => {
+app.get('/backend/conversao-etapas', (req, res) => {
   res.json(mockData.getConversaoEtapasMock());
 });
 
 // Endpoint: Obter motivos de rejeição/cancelamento
-app.get('/api/motivos-rejeicao', (req, res) => {
+app.get('/backend/motivos-rejeicao', (req, res) => {
   res.json(mockData.getMotivosRejeicaoMock());
 });
 
 // Endpoint: Obter desempenho por canal
-app.get('/api/desempenho-canal', (req, res) => {
+app.get('/backend/desempenho-canal', (req, res) => {
   res.json(mockData.getDesempenhoCanaisMock());
 });
 
 // Endpoint: Obter volume de registros de monitoração
-app.get('/api/volume-monitoracao', (req, res) => {
+app.get('/backend/volume-monitoracao', (req, res) => {
   res.json(mockData.getVolumeMonitoracaoMock());
 });
 
  // Endpoint: Filtrar propostas com paginação
-app.get('/api/monitoracao/v1/propostas/filtros', (req, res) => {
+app.get('/backend/monitoracao/v1/propostas/filtros', (req, res) => {
   const params = {
     nuPropostaSeguridade: req.query.nuPropostaSeguridade,
     sgSituacaoProposta: req.query.sgSituacaoProposta,
