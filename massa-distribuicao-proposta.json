@@ -1,0 +1,45 @@
+{
+    "timestamp": "20/05/25 10:12:29",
+    "paginacao": {
+        "offset": 0,
+        "limit": 100,
+        "count": 7
+    },
+    "situacaoRelatorio": [
+        {
+            "sgSituacaoProposta": "EMT",
+            "deSituacaoProposta": "DOCUMENTO EMITIDO",
+            "quantidade": 146
+        },
+        {
+            "sgSituacaoProposta": "ENV",
+            "deSituacaoProposta": "PROPOSTA VENDIDA",
+            "quantidade": 97
+        },
+        {
+            "sgSituacaoProposta": "REJ",
+            "deSituacaoProposta": "REJEITADA",
+            "quantidade": 54
+        },
+        {
+            "sgSituacaoProposta": "CAN",
+            "deSituacaoProposta": "CANCELADA",
+            "quantidade": 15
+        },
+        {
+            "sgSituacaoProposta": "MAN",
+            "deSituacaoProposta": "PROP. RECEBIDA DA EMPRESA,AGUARDANDO EMISSAO",
+            "quantidade": 6
+        },
+        {
+            "sgSituacaoProposta": "EXC",
+            "deSituacaoProposta": "REGISTRO EXCLUIDO",
+            "quantidade": 3
+        },
+        {
+            "sgSituacaoProposta": "GER",
+            "deSituacaoProposta": "PROPOSTA GERADA ",
+            "quantidade": 1
+        }
+    ]
+}
