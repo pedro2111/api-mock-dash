@@ -4,9 +4,15 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const https = require('https')
+const fs = require('fs')
 const qs = require('qs');
 const dotenv = require('dotenv');
 const mockData = require('./data-mock');
+const httpClient = require('./httpClient');
+
+//const ca = fs.readFileSync('acicptestesraiz.cer')
+//const agent = new https.Agent({ca:ca});
 
 // Configuração do ambiente
 dotenv.config();
@@ -16,7 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Endpoint: Gerar token de serviço (client credentials grant)
-app.post('/auth/realms/intranet/protocol/openid-connect/token', async (req, res) => {
+app.post('/backend/auth/realms/intranet/protocol/openid-connect/token', async (req, res) => {
   try {
     const { client_id, client_secret } = req.body;
     console.log("body", req.body)
@@ -32,7 +38,7 @@ app.post('/auth/realms/intranet/protocol/openid-connect/token', async (req, res)
       client_secret
     });
     console.log("data", data)
-    const response = await axios.post(
+    const response = await httpClient.post(
       'https://login.des.caixa/auth/realms/intranet/protocol/openid-connect/token',
       data,
       {
@@ -55,7 +61,7 @@ app.post('/auth/realms/intranet/protocol/openid-connect/token', async (req, res)
 });
 
 // Endpoint: Gerar token com usuário e senha (password grant)
-app.post('/auth/realms/intranet/protocol/openid-connect/token', async (req, res) => {
+app.post('/backend//auth/realms/intranet/protocol/openid-connect/token', async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -70,7 +76,7 @@ app.post('/auth/realms/intranet/protocol/openid-connect/token', async (req, res)
       password
     });
 
-    const response = await axios.post(
+    const response = await httpClient.post(
       'https://login.des.caixa/auth/realms/intranet/protocol/openid-connect/token',
       data,
       {
@@ -104,7 +110,7 @@ app.get('/backend/monitoracao/v1/propostas/:id/historico', async (req, res) => {
 
     const apiUrl = `https://sigpf-servicos-des.apps.nprd.caixa/backend/monitoracao/v1/propostas/${propostaId}/historico?offset=${offset}&limit=${limit}`;
 
-    const response = await axios.get(apiUrl, {
+    const response = await httpClient.get(apiUrl, {
       headers: {
         Authorization: authorization
       },
@@ -151,7 +157,7 @@ app.get('/backend/monitoracao/v1/propostas/filtros', async (req, res) => {
 
     const apiUrl = `http://sigpf-servicos-des.apps.nprd.caixa/backend/monitoracao/v1/propostas/filtros?${queryParams.toString()}`;
 
-    const response = await axios.get(apiUrl, {
+    const response = await httpClient.get(apiUrl, {
       headers: {
         Authorization: authorization
       },
@@ -187,7 +193,7 @@ app.get('/backend/monitoracao/v1/relatorios/situacoes', async (req, res) => {
 
     const apiUrl = `https://sigpf-servicos-des.apps.nprd.caixa/backend/monitoracao/v1/relatorios/situacoes?${queryParams.toString()}`;
 
-    const response = await axios.get(apiUrl, {
+    const response = await httpClient.get(apiUrl, {
       headers: {
         Authorization: authorization
       },
@@ -199,7 +205,7 @@ app.get('/backend/monitoracao/v1/relatorios/situacoes', async (req, res) => {
     if (error.response) {
       res.status(error.response.status).json(error.response.data);
     } else {
-      res.json(mockData.getDistribuicaoSituacaoMock())
+      //res.json(mockData.getDistribuicaoSituacaoMock())
       res.status(500).json({ error: 'Erro ao consultar relatório de situações', details: error.message });
     }
   }

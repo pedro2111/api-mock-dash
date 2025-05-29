@@ -26,6 +26,7 @@ coverage
 
 # Dependencies
 node_modules
+package-lock.json
 *.local
 
 # Editor directories and files
