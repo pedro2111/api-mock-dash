@@ -201,12 +201,16 @@ app.get('/backend/monitoracao/v1/relatorios/situacoes', async (req, res) => {
     });
 
     res.json(response.data);
+    
   } catch (error) {
     if (error.response) {
+      
       res.status(error.response.status).json(error.response.data);
     } else {
-      //res.json(mockData.getDistribuicaoSituacaoMock())
-      res.status(500).json({ error: 'Erro ao consultar relatório de situações', details: error.message });
+      console.error({ error: 'Erro ao consultar relatório de situações', details: error.message });
+      const mock = mockData.getDistribuicaoSituacaoMock();
+      res.status(200).json(mock);
+      //res.status(500).json({ error: 'Erro ao consultar relatório de situações', details: error.message });
     }
   }
 });
