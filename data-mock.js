@@ -217,6 +217,14 @@ function filtrarPropostas(params) {
   };
 }
 
+// Função para gerar dados simulados para monitoração de propostas
+function getMonitoracaoPropostasMock() {
+  // Carregar dados do arquivo massa-monitoracao.json
+  const monitoracaoData = require('./massa-monitoracao.json');
+  
+  return monitoracaoData;
+}
+
 module.exports = {
   getKpisMock,
   getDistribuicaoSituacaoMock,
@@ -227,5 +235,6 @@ module.exports = {
   getMotivosRejeicaoMock,
   getDesempenhoCanaisMock,
   getVolumeMonitoracaoMock,
+  getMonitoracaoPropostasMock,
   filtrarPropostas
 };

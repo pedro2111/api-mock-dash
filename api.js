@@ -21,6 +21,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const apiUrlPRD = 'https://sigpf-servicos-prd.apps.apl4.caixa'
+
 // Endpoint: Gerar token de serviço (client credentials grant)
 app.post('/backend/auth/realms/intranet/protocol/openid-connect/token', async (req, res) => {
   try {
@@ -108,7 +110,7 @@ app.get('/backend/monitoracao/v1/propostas/:id/historico', async (req, res) => {
       return res.status(401).json({ error: 'Authorization header is required' });
     }
 
-    const apiUrl = `https://sigpf-servicos-des.apps.nprd.caixa/backend/monitoracao/v1/propostas/${propostaId}/historico?offset=${offset}&limit=${limit}`;
+    const apiUrl = `${apiUrlPRD}/backoffice/monitoracao/v1/propostas/${propostaId}/historico?offset=${offset}&limit=${limit}`;
 
     const response = await httpClient.get(apiUrl, {
       headers: {
@@ -155,8 +157,9 @@ app.get('/backend/monitoracao/v1/propostas/filtros', async (req, res) => {
     queryParams.append('offset', offset);
     queryParams.append('limit', limit);
 
-    const apiUrl = `http://sigpf-servicos-des.apps.nprd.caixa/backend/monitoracao/v1/propostas/filtros?${queryParams.toString()}`;
-
+    const apiUrl = `${apiUrlPRD}/backoffice/monitoracao/v1/propostas/filtros?${queryParams.toString()}`;
+    
+    
     const response = await httpClient.get(apiUrl, {
       headers: {
         Authorization: authorization
@@ -191,7 +194,7 @@ app.get('/backend/monitoracao/v1/relatorios/situacoes', async (req, res) => {
     queryParams.append('offset', offset);
     queryParams.append('limit', limit);
 
-    const apiUrl = `https://sigpf-servicos-des.apps.nprd.caixa/backend/monitoracao/v1/relatorios/situacoes?${queryParams.toString()}`;
+    const apiUrl = `${apiUrlPRD}/backoffice/monitoracao/v1/relatorios/situacoes?${queryParams.toString()}`;
 
     const response = await httpClient.get(apiUrl, {
       headers: {
@@ -216,8 +219,48 @@ app.get('/backend/monitoracao/v1/relatorios/situacoes', async (req, res) => {
 });
 
 // Endpoint: Obter KPIs principais
-app.get('/backend/kpis', (req, res) => {
-  res.json(mockData.getKpisMock());
+// Endpoint: Obter KPIs principais
+app.get('/backend/kpis', async (req, res) => {
+  const authorization = req.headers['authorization'];
+
+  // JSON mockado de fallback
+  const mockResponse = {
+    totalPropostas: 0,
+    propostasAtivas: 0,
+    taxaConversao: 0.0
+  };
+
+  try {
+    if (!authorization) {
+      return res.status(401).json({ error: 'Authorization header is required' });
+    }
+
+    // Endpoints a serem chamados
+    const urls = {
+      total: `${apiUrlPRD}/backoffice/monitoracao/v1/propostas/total`,
+      ativas: `${apiUrlPRD}/backoffice/monitoracao/v1/propostas/ativas`,
+      taxa: `${apiUrlPRD}/backoffice/monitoracao/v1/propostas/taxaConversaoEMT`
+    };
+
+    // Executa as 3 chamadas em paralelo
+    const [respTotal, respAtivas, respTaxa] = await Promise.all([
+      httpClient.get(urls.total, { headers: { Authorization: authorization } }),
+      httpClient.get(urls.ativas, { headers: { Authorization: authorization } }),
+      httpClient.get(urls.taxa, { headers: { Authorization: authorization } })
+    ]);
+
+    // Monta JSON final
+    const result = {
+      totalPropostas: respTotal.data.totalPropostas,
+      propostasAtivas: respAtivas.data.propostasAtivas,
+      taxaConversao: respTaxa.data.taxaConversao
+    };
+
+    res.json(result);
+  } catch (error) {
+    console.error("Erro ao consultar KPIs:", error.message);
+    res.json(mockResponse); // se qualquer chamada falhar, devolve mock
+  }
 });
 
 // Endpoint: Obter distribuição de propostas por situação
@@ -266,18 +309,45 @@ app.get('/backend/volume-monitoracao', (req, res) => {
   res.json(mockData.getVolumeMonitoracaoMock());
 });
 
- // Endpoint: Filtrar propostas com paginação
-app.get('/mock/backend/monitoracao/v1/propostas/filtros', (req, res) => {
-  const params = {
-    nuPropostaSeguridade: req.query.nuPropostaSeguridade,
-    sgSituacaoProposta: req.query.sgSituacaoProposta,
-    dataInicio: req.query.dataInicio,
-    dataFim: req.query.dataFim,
-    offset: req.query.offset,
-    limit: req.query.limit
-  };
+// Endpoint: Obter monitoração de propostas
+app.get('/backend/monitoracao/v1/propostas/monitoracao', async (req, res) => {
+  try {
+    const authorization = req.headers['authorization'];
 
-  res.json(mockData.filtrarPropostas(params));
+    if (!authorization) {
+      return res.status(401).json({ error: 'Authorization header is required' });
+    }
+
+    const apiUrl = `${apiUrlPRD}/backoffice/monitoracao/v1/propostas/monitoracao`;
+
+    const response = await httpClient.get(apiUrl, {
+      headers: {
+        Authorization: authorization
+      },
+      maxBodyLength: Infinity
+    });
+
+    res.json(response.data);
+    
+  } catch (error) {
+    if (error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      console.error({ error: 'Erro ao consultar monitoração de propostas', details: error.message });
+      const mock = mockData.getMonitoracaoPropostasMock();
+      res.status(200).json(mock);
+    }
+  }
+});
+
+ // Endpoint: Filtrar propostas com paginação (mock sem autenticação)
+app.get('/mock/backend/monitoracao/v1/propostas/filtros', (req, res) => {
+  res.json(mockData.filtrarPropostas());
+});
+
+// Endpoint: Obter monitoração de propostas (mock sem autenticação)
+app.get('/mock/backend/monitoracao/v1/propostas/monitoracao', (req, res) => {
+  res.json(mockData.getMonitoracaoPropostasMock());
 });
 
 
