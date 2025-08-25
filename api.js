@@ -177,6 +177,52 @@ app.get('/backend/monitoracao/v1/propostas/filtros', async (req, res) => {
   }
 });
 
+// Endpoint: Obter última situação das propostas
+app.get('/backend/monitoracao/v1/propostas/ultimaSituacao', async (req, res) => {
+  try {
+    const {
+      nuPropostaSeguridade,
+      sgSituacaoProposta,
+      dataInicio,
+      dataFim,
+      offset = 0,
+      limit = 100
+    } = req.query;
+
+    const authorization = req.headers['authorization'];
+
+    if (!authorization) {
+      return res.status(401).json({ error: 'Authorization header is required' });
+    }
+
+    // Monta query string igual à de /filtros
+    const queryParams = new URLSearchParams();
+    if (nuPropostaSeguridade) queryParams.append('nuPropostaSeguridade', nuPropostaSeguridade);
+    if (sgSituacaoProposta) queryParams.append('sgSituacaoProposta', sgSituacaoProposta);
+    if (dataInicio) queryParams.append('dataInicio', dataInicio);
+    if (dataFim) queryParams.append('dataFim', dataFim);
+    queryParams.append('offset', offset);
+    queryParams.append('limit', limit);
+
+    const apiUrl = `${apiUrlPRD}/backoffice/monitoracao/v1/propostas/ultimaSituacao?${queryParams.toString()}`;
+
+    const response = await httpClient.get(apiUrl, {
+      headers: {
+        Authorization: authorization
+      },
+      maxBodyLength: Infinity
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Erro ao consultar ultimaSituacao:", error.message);
+    // Retorna mock em caso de falha
+    const mock = require('./ultimaSituacaoProposta.json');
+    res.status(200).json(mock);
+  }
+});
+
+
 // Endpoint: Obter distribuição de propostas por situação
 app.get('/backend/monitoracao/v1/relatorios/situacoes', async (req, res) => {
   try {
