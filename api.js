@@ -22,6 +22,73 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const apiUrlPRD = 'https://sigpf-servicos-prd.apps.apl4.caixa'
+const apiUrlCredito = 'https://novocredito.caixa'
+//https://novocredito.caixa/api/credito/contratos/api/v2/contrato?nuContrato=16604865&size=5&page=1
+
+// Endpoint: Obter informações de contrato
+app.get('/backend/credito/contrato', async (req, res) => {
+  try {
+    const { nuContrato, size = 5, page = 1 } = req.query;
+    const authorization = req.headers['authorization'];
+
+    if (!authorization) {
+      return res.status(401).json({ error: 'Authorization header is required' });
+    }
+
+    if (!nuContrato) {
+      return res.status(400).json({ error: 'Número do contrato é obrigatório' });
+    }
+
+    const apiUrl = `${apiUrlCredito}/api/credito/contratos/api/v2/contrato?nuContrato=${nuContrato}&size=${size}&page=${page}`;
+
+    const response = await httpClient.get(apiUrl, {
+      headers: {
+        Authorization: authorization
+      },
+      maxBodyLength: Infinity
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    if (error.response) {
+      console.log("error", error.message)
+      res.status(error.response.status).json(error.response.data);
+      
+    } else {
+      console.log("error", error.message)
+      res.status(500).json({ error: 'Erro ao consultar informações do contrato', details: error.message });
+    }
+  }
+});
+
+// Endpoint: Obter informações de seguro de contrato
+app.get('/backend/credito/contrato/seguro/:coContrato', async (req, res) => {
+  try {
+    const { coContrato } = req.params;
+    const authorization = req.headers['authorization'];
+
+    if (!authorization) {
+      return res.status(401).json({ error: 'Authorization header is required' });
+    }
+
+    const apiUrl = `${apiUrlCredito}/api/credito/contratos/api/contrato/seguro/${coContrato}`;
+
+    const response = await httpClient.get(apiUrl, {
+      headers: {
+        Authorization: authorization
+      },
+      maxBodyLength: Infinity
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    if (error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json({ error: 'Erro ao consultar informações de seguro do contrato', details: error.message });
+    }
+  }
+});
 
 // Endpoint: Gerar token de serviço (client credentials grant)
 app.post('/backend/auth/realms/intranet/protocol/openid-connect/token', async (req, res) => {
@@ -63,7 +130,7 @@ app.post('/backend/auth/realms/intranet/protocol/openid-connect/token', async (r
 });
 
 // Endpoint: Gerar token com usuário e senha (password grant)
-app.post('/backend//auth/realms/intranet/protocol/openid-connect/token', async (req, res) => {
+app.post('/backend/auth/realms/intranet/protocol/openid-connect/token', async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -158,7 +225,6 @@ app.get('/backend/monitoracao/v1/propostas/filtros', async (req, res) => {
     queryParams.append('limit', limit);
 
     const apiUrl = `${apiUrlPRD}/backoffice/monitoracao/v1/propostas/filtros?${queryParams.toString()}`;
-    
     
     const response = await httpClient.get(apiUrl, {
       headers: {
